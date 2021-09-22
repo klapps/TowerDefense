@@ -123,7 +123,7 @@ public class MapGenerator : MonoBehaviour
             {
                 MoveLeft();
             }
-            else if(currentTile.transform.position.x < EndTile.transform.position.x)
+            else if(currentTile.transform.position.x < EndTile.transform.position.x);
             {
                 MoveRight();
             }
