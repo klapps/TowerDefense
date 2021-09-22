@@ -1,0 +1,158 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public class MapGenerator : MonoBehaviour
+{
+    public GameObject MapTile;
+
+    public Color pathColor;
+
+    public Color StartColor;
+    public Color EndColor;
+
+    [SerializeField]private int mapWidth;
+    [SerializeField]private int mapHeight;
+
+    public static List<GameObject> mapTiles = new List<GameObject>();
+    public static List<GameObject> PathTiles = new List<GameObject>();
+
+    public static GameObject StartTile;
+    public static GameObject EndTile;
+
+    private bool ReachedX = false;
+    private bool ReachedY = false;
+    private GameObject currentTile;
+    private int CurrentIndex;
+    private int NextIndex;
+
+    void Start()
+    {
+        GenerateMap();
+    }
+
+    private List<GameObject> getTopEdgeTiles()
+    {
+        List<GameObject> edgeTiles = new List<GameObject>();
+
+       for (int i = mapWidth* (mapHeight-1); i < mapWidth * mapHeight; i++)
+       {
+            edgeTiles.Add(mapTiles[i]);
+       }
+
+        return edgeTiles;
+    }
+
+     void MoveDown()
+     {
+        PathTiles.Add(currentTile);
+        CurrentIndex = mapTiles.IndexOf(currentTile);
+        NextIndex = CurrentIndex-mapWidth;
+        currentTile = mapTiles[NextIndex];
+     }
+
+     void MoveLeft()
+     {
+        PathTiles.Add(currentTile);
+        CurrentIndex = mapTiles.IndexOf(currentTile);
+        NextIndex = CurrentIndex-1;
+        currentTile = mapTiles[NextIndex];
+     }
+
+    void MoveRight()
+    {
+        PathTiles.Add(currentTile);
+        CurrentIndex = mapTiles.IndexOf(currentTile);
+        NextIndex = CurrentIndex+1;
+        currentTile = mapTiles[NextIndex];
+    }
+
+    private List<GameObject> getBottomEdgeTiles()
+    {
+        List<GameObject> edgeTiles = new List<GameObject>();
+
+        for (int i = 0; i < mapWidth; i++)
+        {
+            edgeTiles.Add(mapTiles[i]);
+        }
+
+        return edgeTiles;
+    }
+
+
+    private void GenerateMap()
+    {
+        for (int y = 0; y < mapHeight; y++)
+        {
+            for (int x = 0; x < mapWidth; x++)
+            {
+                GameObject newTile = Instantiate(MapTile);
+
+                mapTiles.Add(newTile);
+
+                newTile.transform.position = new Vector2(x, y);
+            }
+        }
+        List<GameObject> topEdgeTiles = getTopEdgeTiles();
+        List<GameObject> bottomEdgeTiles = getBottomEdgeTiles();
+
+       
+
+        int Rand1 = Random.Range(0, mapWidth);
+        int Rand2 = Random.Range(0, mapWidth);
+
+        StartTile = topEdgeTiles[Rand1];
+        EndTile = bottomEdgeTiles[Rand2];
+
+        int loopCount = 0;
+       
+
+        currentTile = StartTile;
+
+        MoveDown();
+
+        while (!ReachedX)
+        {
+            loopCount++;
+            if (loopCount > 100)
+            {
+                Debug.Log("Loop too long, Broke out of it");
+                break;
+            }
+
+            if(currentTile.transform.position.x > EndTile.transform.position.x)
+            {
+                MoveLeft();
+            }
+            else if(currentTile.transform.position.x < EndTile.transform.position.x)
+            {
+                MoveRight();
+            }
+            else
+            {
+                ReachedX = true;
+            }
+        }
+
+        while (!ReachedY)
+        {
+            if(currentTile.transform.position.y > EndTile.transform.position.y)
+            {
+                MoveDown();
+            }
+            else
+            {
+                ReachedY = true;
+            }
+        }
+
+        PathTiles.Add(EndTile);
+
+        foreach (GameObject obj in PathTiles)
+        {
+            obj.GetComponent<SpriteRenderer>().color = pathColor;
+        }
+
+        StartTile.GetComponent<SpriteRenderer>().color = StartColor;
+        EndTile.GetComponent<SpriteRenderer>().color = EndColor;
+    }
+}
